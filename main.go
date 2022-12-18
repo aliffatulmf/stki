@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"strings"
 
 	"aliffatulmf/stki/tfidf"
 	"aliffatulmf/stki/word"
@@ -33,6 +34,7 @@ func main() {
 	w := n.Weight(tf, idf)
 
 	if len(*kw) > 0 {
-		tfidf.Find(w, *swg, *kw)
+		keyword := strings.Fields(*kw)
+		tfidf.Find(w, *swg, keyword...)
 	}
 }
