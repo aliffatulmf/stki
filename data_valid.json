@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Dokumen 1",
+    "body": "Program logika dan semantik",
+    "document": "doc1"
+  },
+  {
+    "id": 2,
+    "title": "Dokumen 2",
+    "body": "Ilmu antar individu",
+    "document": "doc2"
+  },
+  {
+    "id": 3,
+    "title": "Dokumen 3",
+    "body": "Dalam program ilmu terdapat transfer ilmu semantik",
+    "document": "doc3"
+  }
+]
