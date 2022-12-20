@@ -2,17 +2,19 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
+	"os"
 	"strings"
 
+	"aliffatulmf/stki/stopword"
 	"aliffatulmf/stki/tfidf"
 	"aliffatulmf/stki/word"
 )
 
 type TfIdf interface {
 	TermFrequency() []tfidf.TField
-	InverseDocumentFrequency(tf []tfidf.TField) map[string]float64
-	Weight(tf []tfidf.TField, idf map[string]float64) []tfidf.TWeight
+	InverseDocumentFrequency() map[string]float64
+	//Weight(tf []tfidf.TField, idf map[string]float64) []tfidf.TWeight
 }
 
 func main() {
@@ -22,16 +24,23 @@ func main() {
 	swg := flag.Bool("showScore", false, "to display the score")
 	flag.Parse()
 
-	stopword := word.OpenStopwordFile(*sw)
-	corpus, err := word.ReadJSON(*cp)
+	dict, err := stopword.OpenStopwordFile(*sw)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 
-	var n TfIdf = tfidf.New(corpus,stopword)
+	corpus, err := word.ReadJSON(*cp)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	var n TfIdf = tfidf.New(corpus, dict)
 	tf := n.TermFrequency()
-	idf := n.InverseDocumentFrequency(tf)
-	w := n.Weight(tf, idf)
+	idf := n.InverseDocumentFrequency()
+
+	w := tfidf.Weight(tf, idf)
 
 	if len(*kw) > 0 {
 		keyword := strings.Fields(*kw)

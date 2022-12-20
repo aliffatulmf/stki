@@ -1,4 +1,8 @@
 .idea
 tfidf/*.bak
 
+# test files
+**/*_test.go
+
+# binary files
 stki
