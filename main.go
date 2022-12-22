@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -11,39 +12,49 @@ import (
 	"aliffatulmf/stki/word"
 )
 
-type TfIdf interface {
-	TermFrequency() []tfidf.TField
-	InverseDocumentFrequency() map[string]float64
-	//Weight(tf []tfidf.TField, idf map[string]float64) []tfidf.TWeight
-}
-
 func main() {
 	sw := flag.String("stopword", "stopword/stopword.tala.txt", "set stopword location")
 	cp := flag.String("corpus", "data_short.json", "set corpus location")
 	kw := flag.String("keyword", "", "input keyword")
-	swg := flag.Bool("showScore", false, "to display the score")
 	flag.Parse()
 
 	dict, err := stopword.OpenStopwordFile(*sw)
+	dict.Remove("tahu")
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	corpus, err := word.ReadJSON(*cp)
+	corpus, err := word.ReadJSON(*cp, word.Cleaned)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	var n TfIdf = tfidf.New(corpus, dict)
-	tf := n.TermFrequency()
-	idf := n.InverseDocumentFrequency()
+	s := tfidf.New(corpus, dict)
+	result, err := s.Search(strings.Fields(*kw)...)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	w := tfidf.Weight(tf, idf)
+	var top float64
+	var docKey string
+	for _, val := range result {
+		if top < val.Score {
+			docKey = val.Document
+			top = val.Score
+		}
+	}
 
-	if len(*kw) > 0 {
-		keyword := strings.Fields(*kw)
-		tfidf.Find(w, *swg, keyword...)
+	documents, err := word.ReadJSON(*cp, word.Raw)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	for _, val := range documents {
+		if val.Document == docKey {
+			fmt.Printf("[Title:\t%s]\n", val.Title)
+			fmt.Printf("Content:\t%s\n", val.Body)
+		}
 	}
 }

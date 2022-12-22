@@ -2,6 +2,7 @@ package word
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"strings"
@@ -10,10 +11,17 @@ import (
 	"github.com/RadhiFadlillah/go-sastrawi"
 )
 
-func ReadJSON(file string) ([]model.Corpus, error) {
+type OpenType int
+
+const (
+	Raw OpenType = iota
+	Cleaned
+)
+
+func ReadJSON(f string, t OpenType) ([]model.Corpus, error) {
 	var data []model.Corpus
 
-	readFile, err := os.Open(file)
+	readFile, err := os.Open(f)
 	if err != nil {
 		return data, err
 	}
@@ -24,7 +32,14 @@ func ReadJSON(file string) ([]model.Corpus, error) {
 		return data, err
 	}
 
-	return CleanSpecialChar(data), nil
+	switch t {
+	case Raw:
+		return data, nil
+	case Cleaned:
+		return CleanSpecialChar(data), nil
+	default:
+		return data, errors.New("unrecognized type")
+	}
 }
 
 func CleanSpecialChar(data []model.Corpus) []model.Corpus {

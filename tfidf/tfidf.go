@@ -1,6 +1,7 @@
 package tfidf
 
 import (
+	"errors"
 	"math"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 )
 
 type TFIDF struct {
-	Keyword   string
+	Keyword   []string
 	Token     []string
 	Documents []model.Corpus
 	Stopword  sastrawi.Dictionary
@@ -22,7 +23,20 @@ type TField struct {
 	TF       map[string]int
 }
 
-func New(corpus []model.Corpus, stopword sastrawi.Dictionary) *TFIDF {
+type TWeight struct {
+	Document string
+	Weight   map[string]float64
+}
+
+type TFIDFInterface interface {
+	TermFrequency() []TField
+	InverseDocumentFrequency() map[string]float64
+	SetKeywords(keyword ...string) error
+	Search(keyword ...string) ([]Documents, error)
+	Weight(tf []TField, idf map[string]float64) map[string]float64
+}
+
+func New(corpus []model.Corpus, stopword sastrawi.Dictionary) TFIDFInterface {
 	var list []string
 	var token []string
 
@@ -84,4 +98,52 @@ func (t *TFIDF) InverseDocumentFrequency() map[string]float64 {
 	}
 
 	return idf
+}
+
+func (t *TFIDF) SetKeywords(keyword ...string) error {
+	if len(keyword) > 0 {
+		t.Keyword = keyword
+		return nil
+	}
+	return errors.New("keyword empty")
+}
+
+func (t *TFIDF) Weight(tf []TField, idf map[string]float64) map[string]float64 {
+	var list []TWeight
+
+	// pembobotan tf[index] * idf
+	for _, f := range tf {
+		w := make(map[string]float64)
+
+		for key, val := range f.TF {
+			w[key] = idf[key] * float64(val)
+		}
+
+		list = append(list, TWeight{
+			Document: f.Document,
+			Weight:   w,
+		})
+	}
+
+	weight := make(map[string]float64)
+
+	for _, v := range list {
+		for _, key := range t.Keyword {
+			weight[v.Document] += v.Weight[key]
+		}
+	}
+
+	return weight
+}
+
+func (t *TFIDF) Search(keyword ...string) ([]Documents, error) {
+	if err := t.SetKeywords(keyword...); err != nil {
+		return []Documents{}, err
+	}
+
+	tf := t.TermFrequency()
+	idf := t.InverseDocumentFrequency()
+	weight := t.Weight(tf, idf)
+
+	return FindDocument(t.Documents, weight), nil
 }
