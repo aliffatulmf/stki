@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -12,41 +13,57 @@ import (
 	"aliffatulmf/stki/word"
 )
 
-func main() {
-	sw := flag.String("stopword", "stopword/stopword.tala.txt", "set stopword location")
-	cp := flag.String("corpus", "data_short.json", "set corpus location")
-	kw := flag.String("keyword", "", "input keyword")
-	flag.Parse()
+var (
+	cmdStopword string
+	cmdCorpus   string
+	cmdKeyword  string
+)
 
-	dict, err := stopword.OpenStopwordFile(*sw)
+func init() {
+	flag.StringVar(&cmdStopword, "stopword", "stopword.tala.txt", "set stopword location")
+	flag.StringVar(&cmdCorpus, "corpus", "data_short.json", "set corpus location")
+	flag.StringVar(&cmdKeyword, "keyword", "", "input keyword")
+	flag.Parse()
+}
+
+func callAll() ([]tfidf.Documents, error) {
+	dict, err := stopword.OpenStopwordFile(cmdStopword)
 	dict.Remove("tahu")
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		return []tfidf.Documents{}, err
 	}
 
-	corpus, err := word.ReadJSON(*cp, word.Cleaned)
+	corpus, err := word.ReadJSON(cmdCorpus, word.Cleaned)
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		return []tfidf.Documents{}, err
 	}
 
 	s := tfidf.New(corpus, dict)
-	result, err := s.Search(strings.Fields(*kw)...)
+	result, err := s.Search(strings.Fields(cmdKeyword)...)
 	if err != nil {
-		log.Fatal(err.Error())
+		return []tfidf.Documents{}, err
+	}
+
+	return result, nil
+}
+
+func main() {
+	docs, err := callAll()
+	if err != nil {
+		fmt.Println(errors.Unwrap(err))
+		os.Exit(1)
 	}
 
 	var top float64
 	var docKey string
-	for _, val := range result {
+	for _, val := range docs {
 		if top < val.Score {
 			docKey = val.Document
 			top = val.Score
 		}
 	}
 
-	documents, err := word.ReadJSON(*cp, word.Raw)
+	documents, err := word.ReadJSON(cmdCorpus, word.Raw)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

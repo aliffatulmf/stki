@@ -1,13 +1,14 @@
 package tfidf
 
 import (
-	"errors"
+	"fmt"
 	"math"
 	"strings"
 
 	"aliffatulmf/stki/factory"
 	"aliffatulmf/stki/model"
 	"aliffatulmf/stki/word"
+
 	"github.com/RadhiFadlillah/go-sastrawi"
 )
 
@@ -28,30 +29,18 @@ type TWeight struct {
 	Weight   map[string]float64
 }
 
-type TFIDFInterface interface {
-	TermFrequency() []TField
-	InverseDocumentFrequency() map[string]float64
-	SetKeywords(keyword ...string) error
-	Search(keyword ...string) ([]Documents, error)
-	Weight(tf []TField, idf map[string]float64) map[string]float64
-}
-
-func New(corpus []model.Corpus, stopword sastrawi.Dictionary) TFIDFInterface {
+func New(corpus []model.Corpus, stopword sastrawi.Dictionary) *TFIDF {
 	var list []string
 	var token []string
 
 	// remove special character
 	for _, doc := range corpus {
 		stemmed := factory.Stemmer(doc.Body, stopword)
-		for _, val := range stemmed {
-			list = append(list, val)
-		}
+		list = append(list, stemmed...)
 	}
 
 	// remove duplicate value
-	for _, val := range word.Unique(list) {
-		token = append(token, val)
-	}
+	token = append(token, word.Unique(list)...)
 
 	return &TFIDF{
 		Documents: corpus,
@@ -105,13 +94,13 @@ func (t *TFIDF) SetKeywords(keyword ...string) error {
 		t.Keyword = keyword
 		return nil
 	}
-	return errors.New("keyword empty")
+	return fmt.Errorf("SetKeywords: %w", ErrNoInput)
 }
 
 func (t *TFIDF) Weight(tf []TField, idf map[string]float64) map[string]float64 {
 	var list []TWeight
 
-	// pembobotan tf[index] * idf
+	// TF[index] * IDF
 	for _, f := range tf {
 		w := make(map[string]float64)
 
