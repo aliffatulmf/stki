@@ -8,14 +8,15 @@ import (
 	"strings"
 
 	"aliffatulmf/stki/model"
+
 	"github.com/RadhiFadlillah/go-sastrawi"
 )
 
 type OpenType int
 
 const (
-	Raw OpenType = iota
-	Cleaned
+	Raw     OpenType = iota // pencarian dokumen setelah pembobotan wajib menampilkan menggunakan mode Raw
+	Cleaned                 // pengolahan dokumen sebelum pembobotan wajib menggunakan mode Cleaned
 )
 
 func ReadJSON(f string, t OpenType) ([]model.Corpus, error) {
@@ -63,7 +64,6 @@ func CleanSpecialChar(data []model.Corpus) []model.Corpus {
 func Unique(sliceList []string) []string {
 	keys := make(map[string]bool)
 	var list []string
-
 
 	for _, entry := range sliceList {
 		if _, value := keys[entry]; !value {

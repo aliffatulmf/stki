@@ -1,23 +1,17 @@
 package main
 
 import (
-	"errors"
-	"flag"
-	"fmt"
-	"log"
-	"os"
-	"strings"
-
-	"aliffatulmf/stki/stopword"
-	"aliffatulmf/stki/tfidf"
-	"aliffatulmf/stki/word"
+	"aliffatulmf/stki/db"
+	"aliffatulmf/stki/web"
 )
 
+/*
 var (
 	cmdStopword string
 	cmdCorpus   string
 	cmdKeyword  string
 )
+
 
 func init() {
 	flag.StringVar(&cmdStopword, "stopword", "stopword.tala.txt", "set stopword location")
@@ -25,6 +19,7 @@ func init() {
 	flag.StringVar(&cmdKeyword, "keyword", "", "input keyword")
 	flag.Parse()
 }
+
 
 func callAll() ([]tfidf.Documents, error) {
 	dict, err := stopword.OpenStopwordFile(cmdStopword)
@@ -47,7 +42,7 @@ func callAll() ([]tfidf.Documents, error) {
 	return result, nil
 }
 
-func main() {
+func cli() {
 	docs, err := callAll()
 	if err != nil {
 		fmt.Println(errors.Unwrap(err))
@@ -73,5 +68,18 @@ func main() {
 			fmt.Printf("[Title:\t%s]\n", val.Title)
 			fmt.Printf("Content:\t%s\n", val.Body)
 		}
+	}
+}
+*/
+
+func main() {
+	db, err := db.NewDB()
+	if err != nil {
+		panic(err)
+	}
+
+	repo := web.NewRepository(db)
+	if err := web.WebSetup(repo); err != nil {
+		panic(err)
 	}
 }
