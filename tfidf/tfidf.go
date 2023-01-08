@@ -35,7 +35,7 @@ func New(corpus []model.Corpus, stopword sastrawi.Dictionary) *TFIDF {
 
 	// hapus spesial karakter
 	for _, doc := range corpus {
-		stemmed := factory.Stemmer(doc.Body, stopword)
+		stemmed := factory.Stemmer(doc.Title, stopword)
 		list = append(list, stemmed...)
 	}
 
@@ -70,7 +70,7 @@ func (t *TFIDF) TermFrequency() []TField {
 	var tfield []TField
 
 	for _, doc := range t.Documents {
-		freq := factory.StringFrequency(doc.Body, t.Stopword)
+		freq := factory.StringFrequency(doc.Title, t.Stopword)
 		tfield = append(tfield, TField{
 			Document: doc.Document,
 			TF:       freq,
@@ -92,7 +92,7 @@ func (t *TFIDF) manyDocs(word string) float64 {
 	var total float64
 
 	for _, doc := range t.Documents {
-		if strings.Contains(doc.Body, word) {
+		if strings.Contains(doc.Title, word) {
 			total += 1
 		}
 	}
