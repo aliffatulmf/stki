@@ -17,6 +17,7 @@ type TFIDF struct {
 	Token     []string
 	Documents []model.Corpus
 	Stopword  sastrawi.Dictionary
+	Length    int
 }
 
 type TField struct {
@@ -42,10 +43,12 @@ func New(corpus []model.Corpus, stopword sastrawi.Dictionary) *TFIDF {
 	// hapus kata duplikat
 	token = append(token, word.Unique(list)...)
 
+	pure := word.CleanSpecialChar(corpus)
 	return &TFIDF{
-		Documents: word.CleanSpecialChar(corpus),
+		Documents: pure,
 		Stopword:  stopword,
 		Token:     token,
+		Length:    len(pure),
 	}
 }
 
@@ -87,8 +90,8 @@ func (t *TFIDF) TermFrequency() []TField {
 	return tfield
 }
 
-// manyDocs menghitung jumlah dokumen yang mengandung kata (df)
-func (t *TFIDF) manyDocs(word string) float64 {
+// DF menghitung jumlah dokumen yang mengandung kata (df)
+func (t *TFIDF) DF(word string) float64 {
 	var total float64
 
 	for _, doc := range t.Documents {
@@ -100,14 +103,18 @@ func (t *TFIDF) manyDocs(word string) float64 {
 	return total
 }
 
+func (t *TFIDF) DDF(df float64) float64 {
+	//return math.Log10(float64(t.Length) / df)
+	return float64(t.Length) / df
+}
+
 func (t *TFIDF) InverseDocumentFrequency() map[string]float64 {
 	idf := make(map[string]float64)
-	docLength := float64(len(t.Documents))
 
 	for _, key := range t.Token {
-		docs := t.manyDocs(key)
-		// idf = log(document length (dl) / the number of documents containing the word (list))
-		idf[key] = math.Log10(docLength / docs)
+		df := t.DF(key)
+		ddf := t.DDF(df)
+		idf[key] = math.Log10(ddf)
 	}
 
 	return idf
