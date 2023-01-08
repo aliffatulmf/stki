@@ -25,4 +25,3 @@ func OpenStopwordFile(s string) (sastrawi.Dictionary, error) {
 
 	return sastrawi.NewDictionary(words...), nil
 }
-

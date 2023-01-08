@@ -1,4 +1,7 @@
+# ide folder
 .idea
+.vscode
+
 tfidf/*.bak
 
 # test files
@@ -6,3 +9,6 @@ tfidf/*.bak
 
 # binary files
 stki
+
+# except
+!tfidf/tfidf_test.go

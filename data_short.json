@@ -2,19 +2,19 @@
   {
     "id": 1,
     "title": "Dokumen 1",
-    "body": "Manajemen transaksi logistik",
+    "content": "Manajemen transaksi logistik",
     "document": "d1"
   },
   {
     "id": 2,
     "title": "Dokumen 2",
-    "body": "Pengetahuan antar individu",
+    "content": "Pengetahuan antar individu",
     "document": "d2"
   },
   {
     "id": 3,
     "title": "Dokumen 3",
-    "body": "Dalam manajemen pengetahuan terdapat transfer pengetahuan logistik",
+    "content": "Dalam manajemen pengetahuan terdapat transfer pengetahuan logistik",
     "document": "d3"
   }
 ]
